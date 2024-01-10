@@ -30,10 +30,13 @@ namespace GameDataTableLoader.Loader
 			_tableDataType = _data.GetType();
 			_properties = DataType.PropertyParse(_tableDataType);
 
+			Serializer = serializer;
 			if (null == serializer)
 			{
 				Serializer = DataTableSerializer.SerializeToUtf8Binary<T>;
 			}
+
+			Deserializer = deserializer;
 			if (null == deserializer)
 			{
 				Deserializer = DataTableSerializer.DeserializeToJsonSerializer<T>;
