@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDataTableLoader", "GameDataTableLoader\GameDataTableLoader.csproj", "{50123EC4-9D86-4742-A7DA-97A077AAD2E0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "솔루션 항목", "솔루션 항목", "{6E36B51A-F15B-4723-A6BE-A8964D7647AA}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Project.Common.props = Project.Common.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01_GameDataTable", "01_GameDataTable", "{DC3717BC-5A90-46D2-95C3-FBC201D019D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{50123EC4-9D86-4742-A7DA-97A077AAD2E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50123EC4-9D86-4742-A7DA-97A077AAD2E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50123EC4-9D86-4742-A7DA-97A077AAD2E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50123EC4-9D86-4742-A7DA-97A077AAD2E0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{50123EC4-9D86-4742-A7DA-97A077AAD2E0} = {DC3717BC-5A90-46D2-95C3-FBC201D019D0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE47B2A1-8822-4B28-8283-A72036481099}
+	EndGlobalSection
+EndGlobal

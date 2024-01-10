@@ -1,0 +1,9 @@
+<Project>
+
+	<PropertyGroup>
+		<Configuration>Debug;Release</Configuration>
+		<PlatformTarget>x64</PlatformTarget>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
+
+</Project>

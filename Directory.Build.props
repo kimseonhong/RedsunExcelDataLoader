@@ -1,0 +1,10 @@
+<Project>
+
+	<PropertyGroup>
+		<BaseOutputPath>../_output/$(MSBuildProjectName)/bin/</BaseOutputPath>
+		<BaseIntermediateOutputPath>../_output/$(MSBuildProjectName)/obj/</BaseIntermediateOutputPath>
+		<MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+		<ProjectAssetsFile>$(BaseIntermediateOutputPath)/project.assets.json</ProjectAssetsFile>
+	</PropertyGroup>
+
+</Project>
