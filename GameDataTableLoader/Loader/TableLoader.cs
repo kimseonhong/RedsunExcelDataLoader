@@ -23,6 +23,8 @@ namespace GameDataTableLoader.Loader
 		private Type _tableDataType;
 		private Dictionary<string /* TableName */, DataType> _properties = new();
 
+		public Dictionary<string /* TableName */, TableInfo> TableInfos() { return _tableInfos; }
+
 		public TableLoader(DelegateSerializer? serializer = null, DelegateDeserializer? deserializer = null)
 		{
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -64,9 +66,9 @@ namespace GameDataTableLoader.Loader
 				var realData = JsonSerializer.Deserialize(data, propertyInfo.PropertyType);
 				propertyInfo.SetValue(_data, realData);
 			}
-
-			Packing().Wait();
 		}
+
+		public void SavePack() => Packing().Wait();
 
 		private void AllFiles(DirectoryInfo directoryInfo)
 		{

@@ -34,7 +34,7 @@ namespace GameDataTableLoader.Loader
 
 		public Dictionary<long, dynamic> RunParser()
 		{
-			int rowIndex = 3;
+			int rowIndex = 4;
 			int columnIndex = 1;
 
 			List<dynamic> infos = new List<dynamic>();
@@ -43,7 +43,7 @@ namespace GameDataTableLoader.Loader
 			long tid = 0;
 			string tidValue = "";
 
-			for (; rowIndex < _rowCount;)
+			for (; rowIndex <= _rowCount;)
 			{
 				string selectTid = _worksheet.Cells[rowIndex, columnIndex].Value?.ToString() ?? string.Empty;
 				if (false == string.IsNullOrEmpty(tidValue))
@@ -115,8 +115,8 @@ namespace GameDataTableLoader.Loader
 				}
 				else
 				{
-					// 만약에...Class 라면?
-
+					// 리스트 값에 아무것도 없다면 일단 클래스 여부일 수도 있으니 넘길 수 있도록 한다.
+					col++;
 				}
 			}
 			return dataInfo;
@@ -125,19 +125,32 @@ namespace GameDataTableLoader.Loader
 		private List<dynamic> ListParser(int indexColValue, int row, out int maxCol)
 		{
 			List<dynamic> infos = new List<dynamic>();
-			bool isFrist = true;
-			maxCol = indexColValue;
+			bool isFirst = true;
+			maxCol = indexColValue + 1;
 
 			for (; row <= _rowCount;)
 			{
 				int listColValue = indexColValue + 1;
-				string? indexValue = _worksheet.Cells[row, indexColValue].Value?.ToString() ?? string.Empty;
-				if (true == string.IsNullOrEmpty(indexValue)
-					|| false == isFrist && indexValue == "0")
+				string? indexValue;
+				if (true == isFirst)
 				{
-					break;
+					indexValue = _worksheet.Cells[row, indexColValue].Value?.ToString() ?? string.Empty;
+					if (true == string.IsNullOrEmpty(indexValue))
+					{
+						break;
+					}
 				}
-				isFrist = false;
+				else
+				{
+					indexValue = _worksheet.Cells[row + 1, indexColValue].Value?.ToString() ?? string.Empty;
+					if (true == string.IsNullOrEmpty(indexValue)
+						|| indexValue == "0")
+					{
+						break;
+					}
+					row++;
+				}
+				isFirst = false;
 
 				string colType = _types[indexColValue - 1];
 				string className = "";
@@ -149,7 +162,6 @@ namespace GameDataTableLoader.Loader
 
 				infos.Add(ColParser(ref row, ref listColValue, className));
 				maxCol = listColValue; // 아마 최대치일듯
-				row++;
 			}
 			return infos;
 		}
@@ -236,6 +248,11 @@ namespace GameDataTableLoader.Loader
 					return value;
 				case string type when type.StartsWith("Enum"):
 					{
+						if (string.IsNullOrEmpty(value))
+						{
+							value = "_NONE";
+						}
+
 						string typeName = type.Replace("Enum::", "");
 						Type? enumType = _dataType.FindPropertyType(typeName);
 						if (null != enumType)

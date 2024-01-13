@@ -1,7 +1,14 @@
-﻿using OfficeOpenXml;
+﻿using GameDataTableLoader.Exporter;
+using OfficeOpenXml;
 
 namespace GameDataTableLoader.Loader
 {
+	public class FileTableData
+	{
+		public List<dynamic> Data { get; set; }
+		public string FileName { get; set; }
+	}
+
 	public class TableInfo
 	{
 		private DataType _dataType;
@@ -10,6 +17,7 @@ namespace GameDataTableLoader.Loader
 		private List<dynamic> _tableData = new();
 		private Dictionary<long, dynamic> _tableDataMap = new();
 		private Dictionary<long, string> _keyFileFullName = new();
+		private Dictionary<string, FileTableData> _fileTableData = new();
 
 		private List<string> _types = new List<string>();
 		private List<string> _names = new List<string>();
@@ -29,6 +37,7 @@ namespace GameDataTableLoader.Loader
 			_tableData.Clear();
 			_tableDataMap.Clear();
 			_keyFileFullName.Clear();
+			_fileTableData.Clear();
 
 			_parser = null;
 			_types.Clear();
@@ -46,12 +55,10 @@ namespace GameDataTableLoader.Loader
 					int columnCount = worksheet.Dimension.Columns;
 					for (int column = 1; column <= columnCount; column++)
 					{
-						_types.Add(worksheet.Cells[1, column].Value.ToString() ?? string.Empty);
-					}
-
-					for (int column = 1; column <= columnCount; column++)
-					{
-						_names.Add(worksheet.Cells[2, column].Value.ToString() ?? string.Empty);
+						string type = worksheet.Cells[1, column].Value.ToString() ?? string.Empty;
+						_types.Add(type);
+						string name = worksheet.Cells[2, column].Value.ToString() ?? string.Empty;
+						_names.Add(name);
 					}
 
 					_parser = new Parser(_dataType, _tableName, _types, _names);
@@ -71,7 +78,32 @@ namespace GameDataTableLoader.Loader
 					_keyFileFullName.Add(info.Key, file.FullName);
 				}
 
+				// 파일기준 전체 데이터
+				_fileTableData.Add(file.FullName, new FileTableData() { FileName = file.Name, Data = infos.Values.ToList() });
+
 				return;
+			}
+		}
+
+
+		private Dictionary<string, ExportParser> _excels = new();
+		public void Save()
+		{
+			foreach (var tableData in _fileTableData)
+			{
+				if (false == _excels.TryGetValue(tableData.Key, out var excel))
+				{
+					excel = new ExportParser(_dataType);
+					excel.Run(isFileSaved: false);
+					_excels.Add(tableData.Key, excel);
+				}
+				excel.AddData(tableData.Value.Data, out var a);
+			}
+
+			foreach (var excel in _excels)
+			{
+				File.Delete(excel.Key);
+				excel.Value.SaveFile(excel.Key);
 			}
 		}
 	}
