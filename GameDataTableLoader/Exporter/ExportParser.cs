@@ -67,15 +67,15 @@ namespace GameDataTableLoader.Exporter
 			{
 				switch (_types[i])
 				{
-					case string type when type.StartsWith("Enum::"):
+					case string type when type.Contains("Enum::"):
 						{
-							string enumName = type.Replace("Enum::", string.Empty);
+							string enumName = type.Split("Enum::")[1];
 							Type enumType = _dataType.FindPropertyType(enumName);
 							AddEnumPage(_excel, enumType);
 							AddEnumDropdown(_infoWorksheet, enumName, 4, i + 1);
 						}
 						break;
-					case string type when type.StartsWith("Boolean"):
+					case string type when type.Contains("Boolean"):
 						{
 							AddBooleanDropdown(_infoWorksheet, 4, i + 1);
 						}
@@ -177,12 +177,12 @@ namespace GameDataTableLoader.Exporter
 				_infoWorksheet.Cells[row, col].Value = data.Value;
 
 				// Dropdown 도 추가
-				if (_types[col - 1].StartsWith("Enum::"))
+				if (_types[col - 1].Contains("Enum::"))
 				{
-					string enumName = _types[col - 1].Replace("Enum::", string.Empty);
+					string enumName = _types[col - 1].Split("Enum::")[1];
 					AddEnumDropdown(_infoWorksheet, enumName, row, col);
 				}
-				else if (_types[col - 1].StartsWith("Boolean::"))
+				else if (_types[col - 1].Contains("Boolean::"))
 				{
 					AddBooleanDropdown(_infoWorksheet, row, col);
 				}
@@ -275,7 +275,7 @@ namespace GameDataTableLoader.Exporter
 		private void AddEnumPage(ExcelPackage excel, Type enumType)
 		{
 			// 워크시트 데이터 변경
-			string enumName = enumType.FullName;
+			string enumName = enumType.FullName ?? string.Empty;
 			var worksheet = excel.Workbook.Worksheets.Add($"{enumName}");
 
 			worksheet.Cells[1, 1].Value = "Name";
@@ -303,6 +303,12 @@ namespace GameDataTableLoader.Exporter
 
 		private void AddEnumDropdown(ExcelWorksheet worksheet, string enumName, int row, int col)
 		{
+			int enumRow = 0;
+			{
+				var enumWorksheet = _excel.Workbook.Worksheets[enumName];
+				enumRow = enumWorksheet.Dimension.Rows;
+			}
+
 			var cellAddress = worksheet.Cells[row, col].Address;
 			var existingValidations = worksheet.DataValidations.Where(v => v.Address.Address == cellAddress);
 
@@ -314,7 +320,7 @@ namespace GameDataTableLoader.Exporter
 				var validation = worksheet.DataValidations.AddListValidation(cellAddress);
 
 				// 참조 범위를 동적으로 설정
-				string excelAddress = new ExcelAddress(2, 1, row - 1, 1).AddressAbsolute; // "Name" 열의 데이터 범위
+				string excelAddress = new ExcelAddress(2, 1, enumRow, 1).AddressAbsolute; // "Name" 열의 데이터 범위
 				validation.Formula.ExcelFormula = $"{enumName}!{excelAddress}";
 			}
 		}

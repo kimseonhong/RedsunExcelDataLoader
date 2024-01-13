@@ -7,13 +7,32 @@
 		public string FullName { get; set; }
 		public string AssemblyName { get; set; }
 
-		public Type FindPropertyType(string propertyName)
+		public Type FindPropertyType(string propertyName) => FindPropertyType(Type, propertyName);
+		public Type FindPropertyType(Type type, string propertyName)
 		{
-			foreach (var property in Type.GetProperties())
+			foreach (var property in type.GetProperties())
 			{
 				if (property.PropertyType.FullName == propertyName)
 				{
 					return property.PropertyType;
+				}
+
+				if (true == property.PropertyType.IsGenericType)
+				{
+					var data = FindPropertyType(property.PropertyType.GenericTypeArguments[0], propertyName);
+					if (data != null)
+					{
+						return data;
+					}
+				}
+				else if (true == property.PropertyType.IsClass
+					&& typeof(String) != property.PropertyType)
+				{
+					var data = FindPropertyType(property.PropertyType, propertyName);
+					if (data != null)
+					{
+						return data;
+					}
 				}
 			}
 			return null;
