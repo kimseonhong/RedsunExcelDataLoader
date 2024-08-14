@@ -49,7 +49,16 @@
 					continue;
 				}
 
+				// 구글 Protobuf 면 아래는 제거됨.
 				Type propertyType = property.PropertyType;
+				if (string.IsNullOrEmpty(propertyType.Namespace) || propertyType.Namespace.Contains("Google.Protobuf"))
+				{
+					if (property.Name.Equals("Parser") || property.Name.Equals("Descriptor"))
+					{
+						continue;
+					}
+				}
+
 				if (false == propertyType.IsGenericType)
 				{
 					throw new Exception("무조건 List만을 보유한 객체여야만 합니다..");

@@ -11,11 +11,11 @@ namespace GameDataTableLoader.Loader
 	public class TableLoader<T>
 		where T : class, new()
 	{
-		public delegate byte[] DelegateSerializer(T data);
-		public DelegateSerializer? Serializer;
+		public delegate byte[] DelegatePacker(T data);
+		public DelegatePacker? Packer;
 
-		public delegate T DelegateDeserializer(byte[] data);
-		public DelegateDeserializer? Deserializer;
+		public delegate T DelegateUnPacker(byte[] data);
+		public DelegateUnPacker? UnPacker;
 
 		private T _data = new();
 		private Dictionary<string /* TableName */, TableInfo> _tableInfos = new();
@@ -25,34 +25,46 @@ namespace GameDataTableLoader.Loader
 
 		public Dictionary<string /* TableName */, TableInfo> TableInfos() { return _tableInfos; }
 
-		public TableLoader(DelegateSerializer? serializer = null, DelegateDeserializer? deserializer = null)
+		public TableLoader(DelegatePacker? packer = null, DelegateUnPacker? unpacker = null)
 		{
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 			_tableDataType = _data.GetType();
 			_properties = DataType.PropertyParse(_tableDataType);
 
-			Serializer = serializer;
-			if (null == serializer)
+			Packer = packer;
+			if (null == packer)
 			{
-				Serializer = DataTableSerializer.SerializeToUtf8Binary<T>;
+				Packer = DataTableSerializer.SerializeToUtf8Binary<T>;
 			}
 
-			Deserializer = deserializer;
-			if (null == deserializer)
+			UnPacker = unpacker;
+			if (null == unpacker)
 			{
-				Deserializer = DataTableSerializer.DeserializeToJsonSerializer<T>;
+				UnPacker = DataTableSerializer.DeserializeToJsonSerializer<T>;
 			}
 
 			Directory.CreateDirectory(@$"{TableOption.OutputPath}");
 			Directory.CreateDirectory(@$"{TableOption.OutputPath}\_DataPack");
 		}
 
-		public void Run()
+		public void Run(bool useReflection = true)
 		{
 			DirectoryInfo directoryInfo = new DirectoryInfo(TableOption.ExcelPath);
 			AllFiles(directoryInfo);
 
+			if (useReflection)
+			{
+				_RunReflectionMode();
+			}
+			else
+			{
+				_RunJsonMode();
+			}
+		}
+
+		private void _RunReflectionMode()
+		{
 			foreach (var table in _tableInfos)
 			{
 				PropertyInfo? propertyInfo = _tableDataType.GetProperty($"{table.Key}s");
@@ -62,10 +74,23 @@ namespace GameDataTableLoader.Loader
 					continue;
 				}
 
-				var data = JsonSerializer.Serialize(table.Value.GetData());
-				var realData = JsonSerializer.Deserialize(data, propertyInfo.PropertyType);
+				var data = TableOption.TableJsonSerializer(table.Value.GetData());
+				var realData = TableOption.TableJsonDeserializer(data, propertyInfo.PropertyType);
 				propertyInfo.SetValue(_data, realData);
 			}
+		}
+
+		private void _RunJsonMode()
+		{
+			Dictionary<string /* ObjectName */, dynamic> rawData = new Dictionary<string, dynamic>();
+			foreach (var table in _tableInfos)
+			{
+				rawData.Add($"{table.Key}s", table.Value.GetData());
+			}
+
+			var data = TableOption.TableJsonSerializer(rawData);
+			var realData = TableOption.TableJsonDeserializer(data, _data.GetType());
+			_data = realData as T ?? new T();
 		}
 
 		public void SavePack() => Packing().Wait();
@@ -107,14 +132,14 @@ namespace GameDataTableLoader.Loader
 
 		private async Task Packing()
 		{
-			if (null == Serializer)
+			if (null == Packer)
 			{
 				throw new Exception("Serializer is NULL!!!!!!");
 			}
 
 			Console.WriteLine("Start Packing...");
 			var time = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-			var binary = Serializer.Invoke(_data);
+			var binary = Packer.Invoke(_data);
 			var binaryArray = binary.ToArray();
 			Console.WriteLine("Finish Packing...");
 
