@@ -57,6 +57,10 @@ namespace GameDataTableLoader.Exporter
 					//SetCellData(worksheet, 3, col, enumValue, ExcelHorizontalAlignment.Center, Color.FromArgb(51, 63, 79), Color.White);
 					SetCellData(_infoWorksheet, 3, col, enumValue, ExcelHorizontalAlignment.Center, Color.FromArgb(217, 225, 242));
 				}
+				else
+				{
+					SetCellData(_infoWorksheet, 3, col, "주석", ExcelHorizontalAlignment.Center, Color.FromArgb(217, 225, 242));
+				}
 
 				// 열 너비 자동 조정
 				_infoWorksheet.Column(col).AutoFit();
@@ -197,6 +201,7 @@ namespace GameDataTableLoader.Exporter
 				return;
 			}
 
+			string preName = "";
 			foreach (var property in tableDataType.GetProperties())
 			{
 				if (null == property
@@ -207,11 +212,25 @@ namespace GameDataTableLoader.Exporter
 
 				Type propertyType = property.PropertyType;
 				string typeName = getStringType(propertyType);
+
+				// 구글 Protobuf 대응
+				if (typeName.Contains("Google.Protobuf"))
+				{
+					continue;
+				}
+
 				if (true == isClass)
 				{
 					typeName = $"{type.FullName}.{typeName}";
 				}
 
+				// 구글 Protobuf 대응
+				if (property.Name.Equals($"Has{preName}"))
+				{
+					continue;
+				}
+
+				preName = property.Name;
 				_types.Add(typeName);
 				_names.Add(property.Name);
 
