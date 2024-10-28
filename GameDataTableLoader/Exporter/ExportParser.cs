@@ -15,6 +15,7 @@ namespace GameDataTableLoader.Exporter
 
 		private List<string> _types = new List<string>();
 		private List<string> _names = new List<string>();
+		private List<string> _realType = new List<string>();
 
 		private ExcelPackage? _excel;
 		private ExcelWorksheet? _infoWorksheet;
@@ -53,7 +54,7 @@ namespace GameDataTableLoader.Exporter
 				// Row 3은 설명(주석) 
 				if (TableOption.UseExportXMLParse)
 				{
-					string enumValue = _xmlCommentReader?.GetMemberComment(eMemberType.PROPERTY, _dataType.FullName, _names[col - 1]) ?? string.Empty;
+					string enumValue = _xmlCommentReader?.GetMemberComment(eMemberType.PROPERTY, _realType[col - 1], _names[col - 1]) ?? string.Empty;
 					//SetCellData(worksheet, 3, col, enumValue, ExcelHorizontalAlignment.Center, Color.FromArgb(51, 63, 79), Color.White);
 					SetCellData(_infoWorksheet, 3, col, enumValue, ExcelHorizontalAlignment.Center, Color.FromArgb(217, 225, 242));
 				}
@@ -214,9 +215,12 @@ namespace GameDataTableLoader.Exporter
 				string typeName = getStringType(propertyType);
 
 				// 구글 Protobuf 대응
-				if (typeName.Contains("Google.Protobuf"))
+				if (string.IsNullOrEmpty(propertyType.Namespace) || propertyType.Namespace.Contains("Google.Protobuf"))
 				{
-					continue;
+					if (property.Name.Equals("Parser") || property.Name.Equals("Descriptor"))
+					{
+						continue;
+					}
 				}
 
 				if (true == isClass)
@@ -233,6 +237,7 @@ namespace GameDataTableLoader.Exporter
 				preName = property.Name;
 				_types.Add(typeName);
 				_names.Add(property.Name);
+				_realType.Add(property.DeclaringType?.FullName ?? string.Empty);
 
 				// 일단 클래스 타입이 아니라면 continue
 				if (false == propertyType.IsClass)
@@ -281,7 +286,8 @@ namespace GameDataTableLoader.Exporter
 			//클래스
 			if (true == type.IsClass)
 			{
-				if (type.Name.StartsWith("List"))
+				if (type.Name.StartsWith("List")
+					|| type.Name.StartsWith("Repeat"))
 				{
 					string className = type.GetGenericArguments()[0].FullName ?? string.Empty;
 					return $"List<Class::{className}>";
