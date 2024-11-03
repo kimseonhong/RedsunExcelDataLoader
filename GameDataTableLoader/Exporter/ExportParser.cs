@@ -311,7 +311,7 @@ namespace GameDataTableLoader.Exporter
 			foreach (var value in enumType.GetEnumValues())
 			{
 				worksheet.Cells[row, 1].Value = value;
-				worksheet.Cells[row, 2].Value = (short)value;
+				worksheet.Cells[row, 2].Value = (int)value;
 
 				if (TableOption.UseExportXMLParse)
 				{

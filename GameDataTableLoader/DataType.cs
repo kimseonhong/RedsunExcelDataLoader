@@ -12,6 +12,16 @@
 		{
 			foreach (var property in type.GetProperties())
 			{
+				// 구글 Protobuf 면 아래는 제거됨.
+				Type propertyType = property.PropertyType;
+				if (string.IsNullOrEmpty(propertyType.Namespace) || propertyType.Namespace.Contains("Google.Protobuf"))
+				{
+					if (property.Name.Equals("Parser") || property.Name.Equals("Descriptor"))
+					{
+						continue;
+					}
+				}
+
 				if (property.PropertyType.FullName == propertyName)
 				{
 					return property.PropertyType;
