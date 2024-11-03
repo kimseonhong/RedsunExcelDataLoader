@@ -248,16 +248,16 @@ namespace GameDataTableLoader.Loader
 					return value;
 				case string type when type.StartsWith("Enum"):
 					{
-						if (string.IsNullOrEmpty(value))
-						{
-							value = "_NONE";
-						}
-
 						string typeName = type.Replace("Enum::", "");
 						Type? enumType = _dataType.FindPropertyType(typeName);
+						if (string.IsNullOrEmpty(value))
+						{
+							value = Enum.GetValues(enumType).GetValue(0)?.ToString() ?? string.Empty;
+						}
+
 						if (null != enumType)
 						{
-							return Enum.Parse(enumType, value.ToUpper());
+							return Enum.Parse(enumType, value);
 						}
 					}
 					break;
