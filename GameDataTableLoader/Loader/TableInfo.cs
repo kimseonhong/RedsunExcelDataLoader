@@ -22,7 +22,7 @@ namespace GameDataTableLoader.Loader
 		private List<string> _types = new List<string>();
 		private List<string> _names = new List<string>();
 
-		private Parser? _parser;
+		private LoaderParser? _parser;
 
 		public List<dynamic> GetData() { return _tableData; }
 
@@ -61,7 +61,7 @@ namespace GameDataTableLoader.Loader
 						_names.Add(name);
 					}
 
-					_parser = new Parser(_dataType, _tableName, _types, _names);
+					_parser = new LoaderParser(_dataType, _tableName, _types, _names);
 				}
 
 				_parser.SetWorkSheet(worksheet, file.FullName);
